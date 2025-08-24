@@ -4,6 +4,9 @@ FROM node:18
 # Set the working directory inside the container
 WORKDIR /usr/src/app
 
+# Default Vite API address (embedded at build-time; overrideable at build/run)
+ENV VITE_API_ADDRESS=https://three-data-366493121060.europe-west1.run.app
+
 # Copy package.json and package-lock.json to the working directory
 COPY package*.json ./
 

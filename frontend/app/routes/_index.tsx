@@ -11,7 +11,7 @@ export const meta: MetaFunction = () => {
   ];
 };
 
-const API_ADDRESS = "https://quickstart-service-515827207660.europe-west1.run.app";
+const API_ADDRESS = import.meta.env.VITE_API_ADDRESS;
 
 type Question = {
   id: string | number;

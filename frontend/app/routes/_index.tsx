@@ -2,7 +2,7 @@ import type { MetaFunction } from "@remix-run/node";
 import { json } from "@remix-run/node"; // or cloudflare/deno
 import { Form, useActionData, useLoaderData, useNavigation } from "@remix-run/react";
 import { useEffect, useRef } from "react";
-
+import { authedFetch } from "utils/authfetch.server";
 
 export const meta: MetaFunction = () => {
   return [
@@ -10,8 +10,6 @@ export const meta: MetaFunction = () => {
     { name: "description", content: "ThreeData" },
   ];
 };
-
-const API_ADDRESS = import.meta.env.VITE_API_ADDRESS;
 
 type Question = {
   id: string | number;
@@ -24,7 +22,7 @@ type Question = {
 };
 
 export async function loader() {
-  const res = await fetch(`${API_ADDRESS}/questions`);
+  const res = await authedFetch("/questions")
   const data: Question[] = await res.json();
   return json<Question[]>(data);
 }
@@ -42,7 +40,7 @@ export const action = async ({ request }: { request: Request }) => {
   };
 
   try {
-    const response = await fetch(`${API_ADDRESS}/questions`, {
+    const response = await authedFetch("/questions", {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -145,16 +145,16 @@ export default function Index() {
                 const correctIndex = Number(q.correct_answer) - 1;
                 const correctAnswerText = answers[correctIndex] ?? '—';
                 return (
-                  <li key={q.id} className="group relative overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30 dark:border-slate-800 dark:bg-slate-900">
-                    <div className="absolute -top-3 -left-3 inline-flex items-center gap-2 rounded-br-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white">#{idx + 1}</div>
+                  <li key={q.id} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white pt-8 pb-5 px-5 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30 dark:border-slate-800 dark:bg-slate-900">
+                    <div className="absolute top-0 right-0 inline-flex items-center gap-2 rounded-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white shadow">#{idx + 1}</div>
                     <div className="mb-3 flex items-start gap-2">
-                      <h3 className="text-base font-medium text-slate-900 dark:text-slate-100">{q.question}</h3>
+                      <h3 className="text-base font-medium text-slate-900 dark:text-slate-100 whitespace-normal break-words">{q.question}</h3>
                     </div>
-                    <ol className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300 list-decimal list-inside">
-                      <li>{q.answer1}</li>
-                      <li>{q.answer2}</li>
-                      <li>{q.answer3}</li>
-                      <li>{q.answer4}</li>
+                    <ol className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300 list-decimal list-inside break-words whitespace-normal">
+                      <li className="whitespace-normal break-words">{q.answer1}</li>
+                      <li className="whitespace-normal break-words">{q.answer2}</li>
+                      <li className="whitespace-normal break-words">{q.answer3}</li>
+                      <li className="whitespace-normal break-words">{q.answer4}</li>
                     </ol>
                     <details className="mt-4">
                       <summary className="cursor-pointer select-none text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Show answer</summary>

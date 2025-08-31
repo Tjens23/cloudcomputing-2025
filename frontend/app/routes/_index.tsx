@@ -145,7 +145,7 @@ export default function Index() {
                 const correctIndex = Number(q.correct_answer) - 1;
                 const correctAnswerText = answers[correctIndex] ?? '—';
                 return (
-                  <li key={q.id} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30 dark:border-slate-800 dark:bg-slate-900">
+                  <li key={q.id} className="group relative overflow-visible rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30 dark:border-slate-800 dark:bg-slate-900">
                     <div className="absolute -top-3 -left-3 inline-flex items-center gap-2 rounded-br-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white">#{idx + 1}</div>
                     <div className="mb-3 flex items-start gap-2">
                       <h3 className="text-base font-medium text-slate-900 dark:text-slate-100">{q.question}</h3>
@@ -158,9 +158,14 @@ export default function Index() {
                     </ol>
                     <details className="mt-4">
                       <summary className="cursor-pointer select-none text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Show answer</summary>
-                      <div className="mt-2 flex items-center gap-3">
-                        <div className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200">Correct option: <span className="font-semibold">{correctIndex + 1}</span></div>
-                        <div className="rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">"{correctAnswerText}"</div>
+                      <div className="mt-2 flex items-center gap-3 flex-wrap">
+                        <div className="inline-flex items-center gap-2 rounded-md bg-slate-50 px-3 py-1.5 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200">
+                          <span className="text-xs text-slate-500 dark:text-slate-400">Correct</span>
+                          <span className="font-semibold">{correctIndex + 1}</span>
+                        </div>
+                        <div className="max-w-[16rem] min-w-0 rounded-md bg-blue-600/10 px-3 py-1.5 text-sm text-blue-900 dark:bg-blue-900/30 dark:text-blue-300">
+                          <span className="block truncate" title={correctAnswerText}>"{correctAnswerText}"</span>
+                        </div>
                       </div>
                     </details>
                   </li>

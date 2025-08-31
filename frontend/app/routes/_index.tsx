@@ -23,8 +23,12 @@ type Question = {
 
 export async function loader() {
   const res = await authedFetch("/questions")
-  const data: Question[] = await res.json();
-  return json<Question[]>(data);
+  if (res.ok) {
+    const data: Question[] = await res.json();
+    return json<Question[]>(data);
+  } else {
+    return json<Question[] | { error: string }>({ error: "Something went wrong loading questions." });
+  }
 }
 
 export const action = async ({ request }: { request: Request }) => {
@@ -69,7 +73,7 @@ export const action = async ({ request }: { request: Request }) => {
 };
 
 export default function Index() {
-  const questions = useLoaderData<Question[]>();
+  const questions = useLoaderData<Question[] | { error: string }>();
   const actionData = useActionData<{ success: boolean; error?: string; message?: string }>();
   const navigation = useNavigation();
   const isSubmitting = navigation.state === "submitting";
@@ -80,16 +84,36 @@ export default function Index() {
       formRef.current?.reset();
     }
   }, [actionData]);
+
+  if ('error' in questions) {
+    return (
+      <div className="min-h-[100dvh] bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
+        <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
+          <header className="mb-10">
+            <div className="flex items-center gap-3">
+              <img src="/logo-light.png" alt="ThreeData" className="h-8 w-8 dark:hidden" />
+              <img src="/logo-dark.png" alt="ThreeData" className="h-8 w-8 hidden dark:block" />
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">ThreeData Questions</h1>
+            </div>
+            <p className="mt-2 text-slate-600 dark:text-slate-300">Something went wrong loading the questions.</p>
+          </header>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-[100dvh] bg-gradient-to-b from-slate-50 to-white dark:from-slate-900 dark:to-slate-950">
       <div className="mx-auto max-w-5xl px-4 py-10 sm:py-14">
         <header className="mb-10">
           <div className="flex items-center gap-3">
-            <img src="/logo-light.png" alt="ThreeData" className="h-8 w-8 dark:hidden" />
-            <img src="/logo-dark.png" alt="ThreeData" className="h-8 w-8 hidden dark:block" />
-            <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">ThreeData Questions</h1>
+            <img src="/logo-light.png" alt="ThreeData" className="h-9 w-9 rounded-md shadow-sm dark:hidden" />
+            <img src="/logo-dark.png" alt="ThreeData" className="h-9 w-9 rounded-md shadow-sm hidden dark:block" />
+            <div>
+              <h1 className="text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">ThreeData Questions</h1>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">Quickly browse, inspect, and add multiple-choice questions.</p>
+            </div>
           </div>
-          <p className="mt-2 text-slate-600 dark:text-slate-300">Browse existing questions and add new ones.</p>
         </header>
 
         {actionData?.success === true && (
@@ -105,28 +129,45 @@ export default function Index() {
 
         <section>
           <h2 className="sr-only">Questions</h2>
-          <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {questions.map((q) => (
-              <li key={q.id} className="group rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition hover:shadow-md dark:border-slate-800 dark:bg-slate-900">
-                <div className="mb-3 flex items-start gap-2">
-                  <span className="mt-1 inline-flex h-2 w-2 shrink-0 rounded-full bg-blue-500" aria-hidden />
-                  <h3 className="text-base font-medium text-slate-900 dark:text-slate-100">{q.question}</h3>
-                </div>
-                <ol className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300 list-decimal list-inside">
-                  <li>{q.answer1}</li>
-                  <li>{q.answer2}</li>
-                  <li>{q.answer3}</li>
-                  <li>{q.answer4}</li>
-                </ol>
-                <details className="mt-4">
-                  <summary className="cursor-pointer select-none text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Show answer</summary>
-                  <div className="mt-2 rounded-md bg-slate-50 p-3 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200">
-                    Correct option: <span className="font-semibold">{q.correct_answer}</span>
-                  </div>
-                </details>
-              </li>
-            ))}
-          </ul>
+          <div className="mb-6 flex items-center justify-between">
+            <div className="text-sm text-slate-600 dark:text-slate-400">Questions ({questions.length})</div>
+            <div className="text-xs text-slate-400">Tip: click "Show answer" to reveal the correct option</div>
+          </div>
+
+          {questions.length === 0 ? (
+            <div className="rounded-lg border border-slate-200 bg-white/60 p-6 text-center text-slate-600 shadow-sm dark:border-slate-800 dark:bg-slate-900/60 dark:text-slate-400">
+              No questions yet — add one using the form below.
+            </div>
+          ) : (
+            <ul className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              {questions.map((q, idx) => {
+                const answers = [q.answer1, q.answer2, q.answer3, q.answer4];
+                const correctIndex = Number(q.correct_answer) - 1;
+                const correctAnswerText = answers[correctIndex] ?? '—';
+                return (
+                  <li key={q.id} className="group relative overflow-hidden rounded-xl border border-slate-200 bg-white p-5 shadow-sm transition-transform hover:-translate-y-1 hover:shadow-lg focus-within:ring-2 focus-within:ring-blue-500/30 dark:border-slate-800 dark:bg-slate-900">
+                    <div className="absolute -top-3 -left-3 inline-flex items-center gap-2 rounded-br-lg bg-blue-600 px-3 py-1 text-xs font-semibold text-white">#{idx + 1}</div>
+                    <div className="mb-3 flex items-start gap-2">
+                      <h3 className="text-base font-medium text-slate-900 dark:text-slate-100">{q.question}</h3>
+                    </div>
+                    <ol className="space-y-1.5 text-sm text-slate-700 dark:text-slate-300 list-decimal list-inside">
+                      <li>{q.answer1}</li>
+                      <li>{q.answer2}</li>
+                      <li>{q.answer3}</li>
+                      <li>{q.answer4}</li>
+                    </ol>
+                    <details className="mt-4">
+                      <summary className="cursor-pointer select-none text-sm font-semibold text-blue-600 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300">Show answer</summary>
+                      <div className="mt-2 flex items-center gap-3">
+                        <div className="rounded-md bg-slate-50 px-3 py-2 text-sm text-slate-800 dark:bg-slate-800 dark:text-slate-200">Correct option: <span className="font-semibold">{correctIndex + 1}</span></div>
+                        <div className="rounded-md bg-blue-50 px-3 py-2 text-sm text-blue-700 dark:bg-blue-900/30 dark:text-blue-300">"{correctAnswerText}"</div>
+                      </div>
+                    </details>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
         </section>
 
         <section className="mt-12">

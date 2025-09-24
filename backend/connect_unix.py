@@ -19,21 +19,32 @@ import sqlalchemy
 
 
 def connect_unix_socket() -> sqlalchemy.engine.base.Engine:
-    """Initializes a Unix socket connection pool for a Cloud SQL instance of MySQL."""
+    """Initializes a Unix socket connection pool for a Cloud SQL instance of MySQL.
+
+    Enhancement: If only `INSTANCE_CONNECTION_NAME` is provided (and
+    `INSTANCE_UNIX_SOCKET` is absent), we derive the Unix socket path as
+    `/cloudsql/<INSTANCE_CONNECTION_NAME>` so you can rely solely on
+    `INSTANCE_CONNECTION_NAME` with the *Unix socket* auth style (DB_USER/DB_PASS).
+    This allows choosing between traditional user/password vs IAM (connector)
+    simply by which credential env vars you export (`DB_USER`/`DB_PASS` vs `DB_IAM_USER`).
+    """
     # Note: Saving credentials in environment variables is convenient, but not
-    # secure - consider a more secure solution such as
-    # Cloud Secret Manager (https://cloud.google.com/secret-manager) to help
-    # keep secrets safe.
+    # secure - consider a more secure solution such as Cloud Secret Manager.
     db_user = os.environ["DB_USER"]  # e.g. 'my-database-user'
     db_pass = os.environ["DB_PASS"]  # e.g. 'my-database-password'
     db_name = os.environ["DB_NAME"]  # e.g. 'my-database'
-    unix_socket_path = os.environ[
-        "INSTANCE_UNIX_SOCKET"
-    ]  # e.g. '/cloudsql/project:region:instance'
+
+    # Prefer explicit INSTANCE_UNIX_SOCKET if set; otherwise derive from INSTANCE_CONNECTION_NAME
+    unix_socket_path = os.environ.get("INSTANCE_UNIX_SOCKET")
+    if not unix_socket_path:
+        instance_connection_name = os.environ.get("INSTANCE_CONNECTION_NAME")
+        if not instance_connection_name:
+            raise KeyError(
+                "Either INSTANCE_UNIX_SOCKET or INSTANCE_CONNECTION_NAME must be set to use the unix socket connection." \
+            )
+        unix_socket_path = f"/cloudsql/{instance_connection_name}"  # default Cloud Run/App Engine mount path
 
     pool = sqlalchemy.create_engine(
-        # Equivalent URL:
-        # mysql+pymysql://<db_user>:<db_pass>@/<db_name>?unix_socket=<socket_path>/<cloud_sql_instance_name>
         sqlalchemy.engine.url.URL.create(
             drivername="mysql+pymysql",
             username=db_user,
@@ -42,19 +53,9 @@ def connect_unix_socket() -> sqlalchemy.engine.base.Engine:
             query={"unix_socket": unix_socket_path},
         ),
         # [START_EXCLUDE]
-        # Pool size is the maximum number of permanent connections to keep.
         pool_size=5,
-        # Temporarily exceeds the set pool_size if no connections are available.
         max_overflow=2,
-        # The total number of concurrent connections for your application will be
-        # a total of pool_size and max_overflow.
-        # 'pool_timeout' is the maximum number of seconds to wait when retrieving a
-        # new connection from the pool. After the specified amount of time, an
-        # exception will be thrown.
         pool_timeout=30,  # 30 seconds
-        # 'pool_recycle' is the maximum number of seconds a connection can persist.
-        # Connections that live longer than the specified amount of time will be
-        # re-established
         pool_recycle=1800,  # 30 minutes
         # [END_EXCLUDE]
     )

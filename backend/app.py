@@ -15,20 +15,23 @@ logger = logging.getLogger()
 
 def init_connection_pool() -> sqlalchemy.engine.base.Engine:
     """Sets up connection pool for the app."""
-    # use a Unix socket when INSTANCE_UNIX_SOCKET (e.g. /cloudsql/project:region:instance) is defined
-    if os.environ.get("INSTANCE_UNIX_SOCKET"):
+
+    has_db_user_creds = os.environ.get("DB_USER") and os.environ.get("DB_PASS")
+    has_iam_user = os.environ.get("DB_IAM_USER")
+    has_instance_conn_name = os.environ.get("INSTANCE_CONNECTION_NAME")
+    has_unix_socket = os.environ.get("INSTANCE_UNIX_SOCKET")
+
+    # Precedence: IAM auth > Unix socket with user/pass
+    if has_iam_user and has_instance_conn_name:
+        return connect_with_connector_auto_iam_authn()
+
+    # Use unix socket path if we have user/pass and either an explicit socket path or a connection name
+    if has_db_user_creds and (has_unix_socket or has_instance_conn_name):
         return connect_unix_socket()
 
-    # use the connector when INSTANCE_CONNECTION_NAME (e.g. project:region:instance) is defined
-    if os.environ.get("INSTANCE_CONNECTION_NAME"):
-        # Either a DB_USER or a DB_IAM_USER should be defined. If both are
-        # defined, DB_IAM_USER takes precedence.
-        return (
-            connect_with_connector_auto_iam_authn()
-        )
-
     raise ValueError(
-        "Missing database connection type. Please define one of INSTANCE_HOST, INSTANCE_UNIX_SOCKET, or INSTANCE_CONNECTION_NAME"
+        "Missing database configuration. Provide either (DB_IAM_USER & INSTANCE_CONNECTION_NAME) for IAM connector "
+        "or (DB_USER & DB_PASS & (INSTANCE_UNIX_SOCKET or INSTANCE_CONNECTION_NAME)) for Unix socket connection."
     )
 
 

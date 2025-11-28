@@ -1,3 +1,4 @@
 frontend/bun.lock
 *.lock.*
 terraform/.terraform
+.*tfstate.*

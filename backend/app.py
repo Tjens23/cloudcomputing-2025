@@ -81,6 +81,13 @@ def add_question() -> Response:
     return save_question(db, data["question"], data["answer1"], data["answer2"], data["answer3"], data["answer4"], data["correct_answer"])
     # return save_question(db, question, answer1, answer2, answer3, answer4, correct_answer)
 
+@app.route("/health", methods=["GET"])
+def health_check() -> Response:
+    return Response(
+        status=200,
+        response="OK"
+    )
+
 @app.route("/questions", methods=["GET"])
 def get_questions() -> Response:
     """Returns all questions from the database."""

@@ -1,8 +1,3 @@
-# vpc network are just called this idk why google_compute_network
-resource "google_compute_network" "frontend-vpc" {
-name = "frontend-vpc-name"
-auto_create_subnetworks = false
-}
 
 # vpc network are just called this idk why google_compute_network
 resource "google_compute_network" "backend" {

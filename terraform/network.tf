@@ -14,24 +14,24 @@ resource "google_compute_subnetwork""backend-subnet" {
 name = "backend-subnet"
 ip_cidr_range = "10.0.0.0/24"
 region = var.region
-network =google_compute_network.backend.id
+network = google_compute_network.backend.id
 }
 
 resource "google_compute_subnetwork""frontend-subnet" {
  name = "frontend-subnet"
 ip_cidr_range = "10.0.1.0/24"
 region = var.region
-network =google_compute_network.frontend.id
+network = google_compute_network.frontend.id
 }
 
 resource "google_compute_subnetwork""database-subnet" {
  name = "database-subnet"
 ip_cidr_range = "10.0.2.0/24"
 region = var.region
-network =google_compute_network.backend.id
+network = google_compute_network.backend.id
 }
 
-# TODO connector
+#  connector alternative to ingress
 
 # resource "google_vpc_access_connector" "connector" {
 #   name          = "vpc-con"
@@ -81,6 +81,6 @@ resource "google_compute_network_peering" "frontend-to-backend" {
 # frontend to backend vpc
 resource "google_compute_network_peering" "backend-to-frontend" {
   name         = "frontendpeerer"
-  network      = google_compute_network.frontend.id
-  peer_network = google_compute_network.backend.id
+  network      = google_compute_network.backend.id
+  peer_network = google_compute_network.frontend.id
 }

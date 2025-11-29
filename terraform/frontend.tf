@@ -6,6 +6,12 @@ resource "google_cloud_run_v2_service" "frontend_service" {
         containers {
             image = var.frontend_image
         }
+      vpc_access{
+      network_interfaces {
+        network = "frontend"
+        subnetwork = "frontend-subnet"
+      }
+      }
     }
 }
 

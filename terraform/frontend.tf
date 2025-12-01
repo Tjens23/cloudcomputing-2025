@@ -7,6 +7,9 @@ resource "google_cloud_run_v2_service" "frontend_service" {
   # google_cloud_run_v2_service.backend
 
   # ]
+
+  deletion_protection = false
+
   template {
     containers {
       image = var.frontend_image

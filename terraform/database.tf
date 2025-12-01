@@ -18,7 +18,7 @@ resource "google_sql_database_instance" "instance" {
     tier = "db-f1-micro"
   }
 
-  deletion_protection  = false
+  deletion_protection = false
 }
 
 resource "google_sql_user" "users" {

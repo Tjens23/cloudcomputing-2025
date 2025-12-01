@@ -12,11 +12,8 @@
 resource "google_cloud_run_v2_service" "backend_service" {
   name     = "backend-service"
   location = var.region
+  deletion_protection = false
 
-  depends_on = [
-    google_project_iam_member.cloud_run_vpc_access_agent,
-    google_compute_subnetwork.backend-subnet # Ensure the subnetwork is created first
-    ]
 
 
   template {

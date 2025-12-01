@@ -1,3 +1,9 @@
+variable "db_user" {
+  description = "The database user name"
+  type        = string
+  default     = "admin"
+}
+
 resource "google_sql_database" "database" {
   name     = "backend-database"
   instance = google_sql_database_instance.instance.name

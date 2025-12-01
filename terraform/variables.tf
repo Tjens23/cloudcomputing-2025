@@ -10,7 +10,7 @@ variable project {
 
 variable project_number {
   type = string
-  default = "1028655243443"
+  default = "717236969498"
 }
 variable frontend_image {
     type    = string

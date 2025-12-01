@@ -10,8 +10,8 @@
 # }
 
 resource "google_cloud_run_v2_service" "backend_service" {
-    name     = "backend-service"
-    location = var.region
+  name     = "backend-service"
+  location = var.region
 
   depends_on = [
     google_project_iam_member.cloud_run_vpc_access_agent,
@@ -19,16 +19,15 @@ resource "google_cloud_run_v2_service" "backend_service" {
     ]
 
 
-    template {
-        containers {
-            image = var.backend_image
-        }
-      vpc_access{
+  template {
+    containers {
+      image = var.backend_image
+    }
+    vpc_access {
       network_interfaces {
-        network = "backend"
-        subnetwork = "backend-subnet"
-      }
+        network    = google_compute_network.backend.id
+        subnetwork = google_compute_subnetwork.backend-subnet.id
       }
     }
-
+  }
 }

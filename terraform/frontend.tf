@@ -1,23 +1,23 @@
 resource "google_cloud_run_v2_service" "frontend_service" {
-    name     = "frontend-service"
-    location = var.region
+  name     = "frontend-service"
+  location = var.region
 
-# depends_on = [
-#   google_artifact_registry_repository.frontend,
+  # depends_on = [
+  #   google_artifact_registry_repository.frontend,
   # google_cloud_run_v2_service.backend
 
   # ]
-    template {
-        containers {
-            image = var.frontend_image
-        }
-      vpc_access{
+  template {
+    containers {
+      image = var.frontend_image
+    }
+    vpc_access {
       network_interfaces {
-        network = "frontend"
-        subnetwork = "frontend-subnet"
-      }
+        network    = google_compute_network.frontend.id
+        subnetwork = google_compute_subnetwork.frontend-subnet.id
       }
     }
+  }
 }
 
 resource "google_cloud_run_v2_service_iam_member" "frontend_public_invoker" {

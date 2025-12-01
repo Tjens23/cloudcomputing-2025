@@ -10,12 +10,12 @@ variable project {
 
 variable frontend_image {
     type    = string
-    default = "gcr.io/cloudcomputing-terraform/frontend:latest"
+    default = "europe-north2-docker.pkg.dev/cloudcomputing-terraform/frontend-repo/frontend"
 }
 
 variable backend_image {
     type    = string
-    default = "gcr.io/cloudcomputing-terraform/backend:latest"
+    default = "europe-north2-docker.pkg.dev/cloudcomputing-terraform/backend-repo/backend"
 }
 
 variable sql_version {

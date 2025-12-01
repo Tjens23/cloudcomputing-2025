@@ -1,3 +1,9 @@
+variable "db_user" {
+  description = "The database user name"
+  type        = string
+  default     = "admin"
+}
+
 resource "google_sql_database" "database" {
   name     = "backend-database"
   instance = google_sql_database_instance.instance.name
@@ -13,4 +19,20 @@ resource "google_sql_database_instance" "instance" {
   }
 
   deletion_protection = false
+}
+
+resource "google_sql_user" "users" {
+  name     = var.db_user
+  instance = google_sql_database_instance.instance.name
+  password = random_password.db_password.result
+}
+
+resource "random_password" "db_password" {
+  length  = 16
+  special = true
+}
+
+output "db_password" {
+  value    = random_password.db_password.result
+  sensitive = true
 }

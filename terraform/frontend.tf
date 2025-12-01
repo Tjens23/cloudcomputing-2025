@@ -1,6 +1,7 @@
 resource "google_cloud_run_v2_service" "frontend_service" {
-  name     = "frontend-service"
-  location = var.region
+    name     = "frontend-service"
+    location = var.region
+    deletion_protection = false
 
   # depends_on = [
   #   google_artifact_registry_repository.frontend,

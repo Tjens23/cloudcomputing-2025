@@ -19,6 +19,14 @@ resource "google_sql_database_instance" "instance" {
   }
 
   deletion_protection = false
+  # // see https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/sql_database_instance
+  # network_interface {
+  #   network = "backend_network"
+
+  #   # access_config {
+  #   #   // Ephemeral IP
+  #   # }
+  #  }
 }
 
 resource "google_sql_user" "users" {

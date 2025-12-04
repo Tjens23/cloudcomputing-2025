@@ -82,7 +82,7 @@ def add_question() -> Response:
     # return save_question(db, question, answer1, answer2, answer3, answer4, correct_answer)
 
 @app.route("/health", methods=["GET"])
-def health_check() -> Response:
+def health_check():
     return "OK", 200
 
 @app.route("/questions", methods=["GET"])

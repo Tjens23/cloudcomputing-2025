@@ -83,10 +83,7 @@ def add_question() -> Response:
 
 @app.route("/health", methods=["GET"])
 def health_check() -> Response:
-    return Response(
-        status=200,
-        response="OK"
-    )
+    return "OK", 200
 
 @app.route("/questions", methods=["GET"])
 def get_questions() -> Response:

@@ -3,3 +3,4 @@ frontend/bun.lock
 terraform/.terraform
 *tfstate*
 terraform/credentials.json
+backend/.env

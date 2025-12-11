@@ -4,17 +4,13 @@ resource "google_project_iam_member" "cloud_run_vpc_access_agent" {
   member  = "serviceAccount:service-${var.project_number}@serverless-robot-prod.iam.gserviceaccount.com"
 }
 
-resource "google_project_iam_member" "cloud_services_agent_editor" {
-  project = var.project
-  role    = "roles/editor"
-  member  = "serviceAccount:${var.project_number}@cloudservices.gserviceaccount.com"
-}
+# Removed cloud_services_agent_editor - Google manages this service account automatically
+# Reference: https://registry.terraform.io/providers/hashicorp/google/latest/docs/resources/google_project_iam
 
 resource "time_sleep" "wait_for_connector" {
   depends_on      = [
     google_vpc_access_connector.to_backend,
-    google_project_iam_member.cloud_run_vpc_access_agent,
-    google_project_iam_member.cloud_services_agent_editor
+    google_project_iam_member.cloud_run_vpc_access_agent
   ]
   create_duration = "120s"
 }
@@ -26,7 +22,6 @@ resource "google_cloud_run_v2_service" "backend_service" {
 
   depends_on = [
     google_project_iam_member.cloud_run_vpc_access_agent,
-    google_project_iam_member.cloud_services_agent_editor,
     google_compute_network.vpc,
     google_compute_subnetwork.backend-connector-subnet,
     google_vpc_access_connector.to_backend,

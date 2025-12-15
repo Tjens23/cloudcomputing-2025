@@ -38,6 +38,19 @@ resource "google_cloud_run_v2_service" "backend_service" {
     
     containers {
       image = var.backend_image
+      
+      env {
+        name  = "DB_NAME"
+        value = google_sql_database.database.name
+      }
+      env {
+        name  = "INSTANCE_CONNECTION_NAME"
+        value = google_sql_database_instance.instance.connection_name
+      }
+      env {
+        name  = "DB_IAM_USER"
+        value = google_service_account.backend_sa.email
+      }
     }
     vpc_access {
       connector = google_vpc_access_connector.to_backend.id

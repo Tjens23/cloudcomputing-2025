@@ -5,7 +5,7 @@ variable "db_user" {
 }
 
 resource "google_sql_database" "database" {
-  name     = "backend-database"
+  name     = "threedata"
   instance = google_sql_database_instance.instance.name
 }
 
@@ -28,6 +28,16 @@ resource "google_sql_user" "users" {
   instance = google_sql_database_instance.instance.name
   password = random_password.db_password.result
 }
+
+# IAM user for backend service account
+resource "google_sql_user" "backend_iam_user" {
+  name     = google_service_account.backend_sa.email
+  instance = google_sql_database_instance.instance.name
+  type     = "CLOUD_IAM_SERVICE_ACCOUNT"
+  
+  depends_on = [google_sql_database_instance.instance]
+}
+
 
 resource "random_password" "db_password" {
   length  = 16

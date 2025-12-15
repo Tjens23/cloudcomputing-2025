@@ -23,3 +23,10 @@ resource "google_service_account" "backend_sa" {
   account_id   = "backend-service-account"
   display_name = "Backend Service Account"
 }
+
+# Grant backend service account Cloud SQL Client role
+resource "google_project_iam_member" "backend_sql_client" {
+  project = var.project
+  role    = "roles/cloudsql.client"
+  member  = "serviceAccount:${google_service_account.backend_sa.email}"
+}

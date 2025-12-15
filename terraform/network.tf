@@ -49,9 +49,6 @@ resource "google_compute_subnetwork""frontend-subnet" {
 }
 
 
-#  connector alternative to ingress
-
-
 # connector for accessing network, this is for frontend connecting to backend
 resource "google_compute_subnetwork" "backend-connector-subnet" {
   name          = "backend-connector-subnet"

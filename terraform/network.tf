@@ -20,7 +20,7 @@ resource "google_compute_global_address" "private_ip_address" {
   network       = google_compute_network.vpc.id
 }
 
-# Create private service connection for Cloud SQL
+
 resource "google_service_networking_connection" "private_vpc_connection" {
   network                 = google_compute_network.vpc.id
   service                 = "servicenetworking.googleapis.com"
@@ -29,6 +29,7 @@ resource "google_service_networking_connection" "private_vpc_connection" {
   depends_on = [google_compute_global_address.private_ip_address]
   
   lifecycle {
+    ignore_changes = all
     prevent_destroy = false
   }
 }

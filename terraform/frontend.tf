@@ -17,6 +17,8 @@ resource "google_cloud_run_v2_service" "frontend_service" {
   }
 
   template {
+    service_account = google_service_account.frontend_sa.email
+    
     containers {
       image = var.frontend_image
       
@@ -27,7 +29,7 @@ resource "google_cloud_run_v2_service" "frontend_service" {
     }
     vpc_access {
       connector = google_vpc_access_connector.to_frontend.id
-      egress = "ALL_TRAFFIC"
+      egress = "PRIVATE_RANGES_ONLY"
     }
   }
 }

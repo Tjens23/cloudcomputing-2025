@@ -34,6 +34,8 @@ resource "google_cloud_run_v2_service" "backend_service" {
   }
 
   template {
+    service_account = google_service_account.backend_sa.email
+    
     containers {
       image = var.backend_image
     }
@@ -42,4 +44,12 @@ resource "google_cloud_run_v2_service" "backend_service" {
       egress = "PRIVATE_RANGES_ONLY"
     }
   }
+}
+
+# Allow frontend service account to invoke backend
+resource "google_cloud_run_v2_service_iam_member" "backend_invoker" {
+  name     = google_cloud_run_v2_service.backend_service.name
+  location = google_cloud_run_v2_service.backend_service.location
+  role     = "roles/run.invoker"
+  member   = "serviceAccount:${google_service_account.frontend_sa.email}"
 }

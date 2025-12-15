@@ -36,9 +36,21 @@ resource "google_cloud_run_v2_service" "backend_service" {
   template {
     service_account = google_service_account.backend_sa.email
     
+    annotations = {
+      "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.instance.connection_name
+    }
+    
     containers {
       image = var.backend_image
       
+      env {
+        name  = "DB_USER"
+        value = google_sql_user.users.name
+      }
+      env {
+        name  = "DB_PASS"
+        value = random_password.db_password.result
+      }
       env {
         name  = "DB_NAME"
         value = google_sql_database.database.name
@@ -46,10 +58,6 @@ resource "google_cloud_run_v2_service" "backend_service" {
       env {
         name  = "INSTANCE_CONNECTION_NAME"
         value = google_sql_database_instance.instance.connection_name
-      }
-      env {
-        name  = "DB_IAM_USER"
-        value = google_service_account.backend_sa.email
       }
     }
     vpc_access {

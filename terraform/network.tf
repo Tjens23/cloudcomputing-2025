@@ -1,22 +1,50 @@
 
 # vpc network are just called this idk why google_compute_network
 resource "google_compute_network" "vpc" {
-name = "vpc-name"
-auto_create_subnetworks = false
+  name                    = "vpc-name"
+  auto_create_subnetworks = false
+  
+  # This helps with proper cleanup during destroy
+  lifecycle {
+    ignore_changes = []
+    prevent_destroy = false
+  }
+}
+
+# Reserve IP range for Cloud SQL private service connection
+resource "google_compute_global_address" "private_ip_address" {
+  name          = "cloudsql-peering-range"
+  purpose       = "VPC_PEERING"
+  address_type  = "INTERNAL"
+  prefix_length = 16
+  network       = google_compute_network.vpc.id
+}
+
+# Create private service connection for Cloud SQL
+resource "google_service_networking_connection" "private_vpc_connection" {
+  network                 = google_compute_network.vpc.id
+  service                 = "servicenetworking.googleapis.com"
+  reserved_peering_ranges = [google_compute_global_address.private_ip_address.name]
+  
+  depends_on = [google_compute_global_address.private_ip_address]
+  
+  lifecycle {
+    prevent_destroy = false
+  }
 }
 
 resource "google_compute_subnetwork""backend-subnet" {
-name = "backend-subnet"
-ip_cidr_range = "10.1.1.0/24"
-region = var.region
-network = google_compute_network.vpc.id
+  name = "backend-subnet"
+  ip_cidr_range = "10.1.1.0/24"
+  region = var.region
+  network = google_compute_network.vpc.id
 }
 
 resource "google_compute_subnetwork""frontend-subnet" {
- name = "frontend-subnet"
-ip_cidr_range = "10.2.1.0/24"
-region = var.region
-network = google_compute_network.vpc.id
+  name = "frontend-subnet"
+  ip_cidr_range = "10.2.1.0/24"
+  region = var.region
+  network = google_compute_network.vpc.id
 }
 
 

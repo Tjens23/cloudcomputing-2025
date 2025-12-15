@@ -19,13 +19,16 @@ resource "google_cloud_run_v2_service" "frontend_service" {
   template {
     containers {
       image = var.frontend_image
+      
+      env {
+        name  = "API_ADDRESS"
+        value = google_cloud_run_v2_service.backend_service.uri
+      }
     }
     vpc_access {
       connector = google_vpc_access_connector.to_frontend.id
-      egress = "ALL_TRAFFIC" # Or "PRIVATE_RANGES_ONLY"
-      # ingress = "ALL_TRAFFIC" # Or "PRIVATE_RANGES_ONLY"
+      egress = "ALL_TRAFFIC"
     }
-
   }
 }
 

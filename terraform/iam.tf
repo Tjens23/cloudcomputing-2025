@@ -9,3 +9,4 @@ resource "google_project_iam_binding" "editors" {
     "user:Phillip713dk@gmail.com",
   ]
 }
+

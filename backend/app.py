@@ -1,17 +1,43 @@
 from __future__ import annotations
-from flask import Flask, request, Response
+from flask import Flask, request, Response, jsonify
 import datetime
 import logging
 import os
 import sqlalchemy
+from google.cloud import logging as gcloud_logging
 
 from connect_connector_auto_iam_authn import connect_with_connector_auto_iam_authn
 from connect_unix import connect_unix_socket
 
 app = Flask(__name__)
 
-logger = logging.getLogger()
+logging_client = gcloud_logging.Client()
+log_name = "backend-log" # which log stream to logs to.
+log = logging_client.logger(log_name)
 
+
+# used for manual logging of messages
+def log_entry_add(message: str):
+    """Write an error log entry to Cloud Logging."""
+    metadata = {"severity": "NOTICE"}
+    entry = log.entry(metadata, {"message": message})
+    log.write(entry)
+
+# this triggers on internal errors eg. thrown exceptions as the generated
+# flask response is a 500
+@app.errorhandler(500)
+def internal_error(e):
+    logging.error(
+    "Internal server error",
+    extra={
+    "json_fields": {
+    "endpoint": request.path,
+    "status": 500,
+    "error": str(e)
+    }
+    }
+    )
+    return {"error": "Internal server error"}, 500
 
 def init_connection_pool() -> sqlalchemy.engine.base.Engine:
     """Sets up connection pool for the app."""
@@ -76,10 +102,13 @@ def add_question() -> Response:
     # answer3 = request.form["answer3"]
     # answer4 = request.form["answer4"]
     # correct_answer = request.form["correct_answer"]
-    
+
     data = request.get_json()
+    log_entry_add("GET of /Questions")
     return save_question(db, data["question"], data["answer1"], data["answer2"], data["answer3"], data["answer4"], data["correct_answer"])
     # return save_question(db, question, answer1, answer2, answer3, answer4, correct_answer)
+    log.exception(e)
+
 
 @app.route("/health", methods=["GET"])
 def health_check():
@@ -87,18 +116,24 @@ def health_check():
 
 @app.route("/questions", methods=["GET"])
 def get_questions() -> Response:
-    """Returns all questions from the database."""
+    log_entry_add("POST of /Questions")
     questions = []
-    with db.connect() as conn:
-        # Execute the query and fetch all results
-        question_rows = conn.execute(
-            sqlalchemy.text(
-                "SELECT * from quiz_questions"
-            )
-        ).fetchall()
-        for row in question_rows:
-            questions.append({"id": row[0], "question": row[1], "answer1": row[2], "answer2": row[3], "answer3": row[4], "answer4": row[5], "correct_answer": row[6], "time_cast": row[7]})
-        return questions
+    try:
+
+        """Returns all questions from the database."""
+        with db.connect() as conn:
+            # Execute the query and fetch all results
+            question_rows = conn.execute(
+                sqlalchemy.text(
+                    "SELECT * from quiz_questions"
+                )
+            ).fetchall()
+            for row in question_rows:
+                questions.append({"id": row[0], "question": row[1], "answer1": row[2], "answer2": row[3], "answer3": row[4], "answer4": row[5], "correct_answer": row[6], "time_cast": row[7]})
+    except Exception as e:
+            print("Something went wrong")
+
+    return questions
 
 
 def save_question(db: sqlalchemy.engine.base.Engine, question: str, answer1: str, answer2: str, answer3: str, answer4: str, correct_answer: int) -> Response:
@@ -133,12 +168,19 @@ def save_question(db: sqlalchemy.engine.base.Engine, question: str, answer1: str
         # If something goes wrong, handle the error in this section. This might
         # involve retrying or adjusting parameters depending on the situation.
         # [START_EXCLUDE]
-        logger.exception(e)
-        return Response(
-            status=500,
-            response="Unable to successfully save question! Please check the "
-            "application logs for more details.",
-        )
+        # the view created an exception as such flask can map this to a http
+        # 500 as it means something went wrong on the server side.
+        log.exception(e)
+        # allow error handler for 500 codes to see error which get's
+        # converted to http errorcode 500
+        raise
+        # return Response(
+        #     status=500,
+        #     response="Unable to successfully save question! Please check the "
+        #     "application logs for more details.",
+            # ensure e is also returned such that responder can also use
+
+        # )
         # [END_EXCLUDE]
     # [END cloud_sql_mysql_sqlalchemy_connection]
 

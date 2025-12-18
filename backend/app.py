@@ -104,7 +104,7 @@ def add_question() -> Response:
     # correct_answer = request.form["correct_answer"]
 
     data = request.get_json()
-    log_entry_add("GET of /Questions")
+    log_entry_add("POST of /Questions")
     return save_question(db, data["question"], data["answer1"], data["answer2"], data["answer3"], data["answer4"], data["correct_answer"])
     # return save_question(db, question, answer1, answer2, answer3, answer4, correct_answer)
 
@@ -115,7 +115,7 @@ def health_check():
 
 @app.route("/questions", methods=["GET"])
 def get_questions() -> Response:
-    log_entry_add("POST of /Questions")
+    log_entry_add("GET of /Questions")
     questions = []
     try:
 

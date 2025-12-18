@@ -1,11 +1,11 @@
 from __future__ import annotations
+
 from flask import Flask, request, Response, jsonify
 import datetime
 import logging
 import os
 import sqlalchemy
 from google.cloud import logging as gcloud_logging
-
 from connect_connector_auto_iam_authn import connect_with_connector_auto_iam_authn
 from connect_unix import connect_unix_socket
 
@@ -13,15 +13,15 @@ app = Flask(__name__)
 
 logging_client = gcloud_logging.Client()
 log_name = "backend-log" # which log stream to logs to.
-log = logging_client.logger(log_name)
-
+logger = logging_client.logger(log_name)
+# needed if you use the logging python built in library such that writing to log automatically calls google cloud
+logging_client.setup_logging()
 
 # used for manual logging of messages
 def log_entry_add(message: str):
     """Write an error log entry to Cloud Logging."""
-    metadata = {"severity": "NOTICE"}
-    entry = log.entry(metadata, {"message": message})
-    log.write(entry)
+    # gives info severity in cloud, hopefully goes under backend
+    logging.info(message)
 
 # this triggers on internal errors eg. thrown exceptions as the generated
 # flask response is a 500
@@ -107,7 +107,6 @@ def add_question() -> Response:
     log_entry_add("GET of /Questions")
     return save_question(db, data["question"], data["answer1"], data["answer2"], data["answer3"], data["answer4"], data["correct_answer"])
     # return save_question(db, question, answer1, answer2, answer3, answer4, correct_answer)
-    log.exception(e)
 
 
 @app.route("/health", methods=["GET"])
@@ -170,9 +169,7 @@ def save_question(db: sqlalchemy.engine.base.Engine, question: str, answer1: str
         # [START_EXCLUDE]
         # the view created an exception as such flask can map this to a http
         # 500 as it means something went wrong on the server side.
-        log.exception(e)
-        # allow error handler for 500 codes to see error which get's
-        # converted to http errorcode 500
+        # error handler for 500 codes to sees the generated 500 request from the excpetion
         raise
         # return Response(
         #     status=500,

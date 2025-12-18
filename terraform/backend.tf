@@ -35,14 +35,14 @@ resource "google_cloud_run_v2_service" "backend_service" {
 
   template {
     service_account = google_service_account.backend_sa.email
-    
+
     annotations = {
       "run.googleapis.com/cloudsql-instances" = google_sql_database_instance.instance.connection_name
     }
-    
+
     containers {
       image = var.backend_image
-      
+
       env {
         name  = "DB_USER"
         value = google_sql_user.users.name
@@ -73,4 +73,13 @@ resource "google_cloud_run_v2_service_iam_member" "backend_invoker" {
   location = google_cloud_run_v2_service.backend_service.location
   role     = "roles/run.invoker"
   member   = "serviceAccount:${google_service_account.frontend_sa.email}"
+}
+
+
+# Allow public access (including Uptime Checks) to invoke the backend service as health and uptime checkers are unauthenticated
+resource "google_cloud_run_v2_service_iam_member" "public_invoker" {
+  name     = google_cloud_run_v2_service.backend_service.name
+  location = google_cloud_run_v2_service.backend_service.location
+  role     = "roles/run.invoker"
+  member   = "allUsers"
 }

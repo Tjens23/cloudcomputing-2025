@@ -1,8 +1,5 @@
+# Cloud Computing
 
-# TODO work
+This is the project of the Cloud Computing Continuum elective subject for 5th semester students on Southern University of Denmark.
 
-add egress ingress for vpc networks
-
-add vpc connector
-
-IAM roles
+The application is a frontend-backend-database architecture to demonstrate various Google Cloud concepts.
